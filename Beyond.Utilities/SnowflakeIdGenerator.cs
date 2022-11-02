@@ -1,0 +1,81 @@
+﻿// ReSharper disable CheckNamespace
+// ReSharper disable UnusedType.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable IdentifierTypo
+
+namespace Beyond.Utilities;
+
+// We should keep the generator as a singleton, it means that we should only create the generator
+// once. If not, it may generate some duplicate Ids.
+public class SnowflakeIdGenerator
+{
+    public const int TimestampLeftShift = SequenceBits + WorkerIdBits + DatacenterIdBits;
+    public const long Twepoch = 1288834974000L;
+    private const int DatacenterIdBits = 5;
+    private const int DatacenterIdShift = SequenceBits + WorkerIdBits;
+    private const long MaxDatacenterId = -1L ^ (-1L << DatacenterIdBits);
+    private const long MaxWorkerId = -1L ^ (-1L << WorkerIdBits);
+    private const int SequenceBits = 12;
+    private const long SequenceMask = -1L ^ (-1L << SequenceBits);
+    private const int WorkerIdBits = 5;
+    private const int WorkerIdShift = SequenceBits;
+    private readonly object _lock = new();
+    private long _lastTimestamp = -1L;
+
+    public SnowflakeIdGenerator(long workerId, long datacenterId, long sequence = 0L)
+    {
+        if (workerId > MaxWorkerId || workerId < 0)
+            throw new ArgumentException($"worker Id must greater than or equal 0 and less than or equal {MaxWorkerId}");
+
+        if (datacenterId > MaxDatacenterId || datacenterId < 0)
+            throw new ArgumentException(
+                $"datacenter Id must greater than or equal 0 and less than or equal {MaxDatacenterId}");
+
+        WorkerId = workerId;
+        DatacenterId = datacenterId;
+        Sequence = sequence;
+    }
+
+    public long DatacenterId { get; protected set; }
+
+    public long Sequence { get; internal set; }
+
+    public long WorkerId { get; protected set; }
+
+    public long NextId()
+    {
+        lock (_lock)
+        {
+            var timestamp = TimeGen();
+            if (timestamp < _lastTimestamp) throw new Exception("timestamp error");
+
+            if (_lastTimestamp == timestamp)
+            {
+                Sequence = (Sequence + 1) & SequenceMask;
+
+                if (Sequence == 0) timestamp = TilNextMillis(_lastTimestamp);
+            }
+            else
+            {
+                Sequence = 0;
+            }
+
+            _lastTimestamp = timestamp;
+            return ((timestamp - Twepoch) << TimestampLeftShift) | (DatacenterId << DatacenterIdShift) |
+                   (WorkerId << WorkerIdShift) | Sequence;
+        }
+    }
+
+    private long TilNextMillis(long lastTimestamp)
+    {
+        var timestamp = TimeGen();
+        while (timestamp <= lastTimestamp) timestamp = TimeGen();
+
+        return timestamp;
+    }
+
+    private long TimeGen()
+    {
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+}
