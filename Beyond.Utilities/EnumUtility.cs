@@ -4,6 +4,13 @@
 
 namespace Beyond.Utilities;
 
+public class EnumDetail<T> where T : Enum
+{
+    public string? Description { get; set; }
+    public T? Item { get; set; }
+    public string? Name { get; set; }
+    public int Value { get; set; }
+}
 public static class EnumUtility
 {
     public static bool ContainsName<TEnum>(string? name, bool ignoreCase = false) where TEnum : Enum

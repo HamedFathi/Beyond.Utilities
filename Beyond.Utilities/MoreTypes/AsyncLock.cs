@@ -2,7 +2,7 @@
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Global
 
-namespace Beyond.Utilities;
+namespace Beyond.Utilities.MoreTypes;
 
 public class AsyncLock : IDisposable
 {
