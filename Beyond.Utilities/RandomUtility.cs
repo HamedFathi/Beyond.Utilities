@@ -23,7 +23,7 @@ public static class RandomUtility
     {
         if (length <= 0) throw new ArgumentException($"'{nameof(length)}' cannot be zero or negative.");
 
-        using var crypto = new RNGCryptoServiceProvider();
+        using var crypto = RandomNumberGenerator.Create();
 
         var data = new byte[length];
         byte[]? buffer = null;
