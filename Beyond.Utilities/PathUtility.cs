@@ -6,6 +6,24 @@ namespace Beyond.Utilities;
 
 public static class PathUtility
 {
+    public static bool EvaluatePath(string path, bool isFilePath = true)
+    {
+        try
+        {
+            var folderPath = isFilePath ? Path.GetDirectoryName(path) : path;
+            if (!Directory.Exists(folderPath) && folderPath != null)
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+            return true;
+        }
+        catch
+        {
+            // ignored
+        }
+        return false;
+    }
+
     public static string? GetDirectoryName(string path)
     {
         if (IsDirectory(path).HasValue)
