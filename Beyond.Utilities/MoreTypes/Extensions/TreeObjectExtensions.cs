@@ -7,7 +7,7 @@ namespace Beyond.Utilities.MoreTypes;
 
 public static class TreeObjectExtensions
 {
-    public static IEnumerable<TreeObject<T>> ToFlatten<T>(this TreeObject<T> treeObject, bool addRootObject = true)
+    public static IEnumerable<ITreeObject<T>> ToFlatten<T>(this ITreeObject<T> treeObject, bool addRootObject = true)
     {
         if (addRootObject)
             yield return treeObject;
@@ -21,7 +21,7 @@ public static class TreeObjectExtensions
         }
     }
 
-    public static void Walk<T>(this TreeObject<T> treeObject, Action<TreeObject<T>> action, bool checkRootObject = true)
+    public static void Walk<T>(this ITreeObject<T> treeObject, Action<ITreeObject<T>> action, bool checkRootObject = true)
     {
         if (checkRootObject)
             action(treeObject);
@@ -35,11 +35,11 @@ public static class TreeObjectExtensions
         }
     }
 
-    public static IEnumerable<TreeObject<T>> ToHierarchy<T>(this IEnumerable<TreeObject<T>> flattenTreeObject) where T : notnull
+    public static IEnumerable<ITreeObject<T>> ToHierarchy<T>(this IEnumerable<ITreeObject<T>> flattenTreeObject) where T : notnull
     {
         // if ParentId is null => this is root.
-        var lookup = new Dictionary<T, TreeObject<T>>();
-        var nested = new List<TreeObject<T>>();
+        var lookup = new Dictionary<T, ITreeObject<T>>();
+        var nested = new List<ITreeObject<T>>();
 
         foreach (var item in flattenTreeObject)
         {
