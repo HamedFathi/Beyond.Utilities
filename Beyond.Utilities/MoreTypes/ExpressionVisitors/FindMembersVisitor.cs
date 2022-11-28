@@ -1,12 +1,12 @@
 ﻿// ReSharper disable UnusedMember.Global
 namespace Beyond.Utilities.MoreTypes.ExpressionVisitors;
 
-public class FindMembers : ExpressionVisitor
+public class FindMembersVisitor : ExpressionVisitor
 {
     internal static readonly PropertyInfo ArrayLength = typeof(Array).GetProperty(nameof(Array.Length))!;
     public static MemberInfo? Member<T>(Expression<Func<T, object>> expression)
     {
-        var finder = new FindMembers();
+        var finder = new FindMembersVisitor();
         finder.Visit(expression);
         return finder.Members.LastOrDefault();
     }
@@ -34,7 +34,7 @@ public class FindMembers : ExpressionVisitor
     }
     public static MemberInfo[] Determine(Expression expression)
     {
-        var visitor = new FindMembers();
+        var visitor = new FindMembersVisitor();
         visitor.Visit(expression);
         return visitor.Members.ToArray();
     }
