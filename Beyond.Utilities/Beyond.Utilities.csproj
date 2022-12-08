@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
@@ -8,7 +8,7 @@
 		<Authors>Hamed Fathi</Authors>
 		<Company />
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<Version>0.0.8</Version>
+		<Version>0.0.9</Version>
 		<LangVersion>latest</LangVersion>
 		<PackageProjectUrl>https://github.com/HamedFathi/Beyond.Utilities</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/HamedFathi/Beyond.Utilities</RepositoryUrl>
