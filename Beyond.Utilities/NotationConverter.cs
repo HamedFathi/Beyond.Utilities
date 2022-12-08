@@ -10,11 +10,7 @@ public static class NotationConverter
         infix = infix.RemoveWhitespace();
         var postfix = InfixToPostfix(infix);
         var newInfix = PostfixToInfix(postfix);
-        if (!newInfix.StartsWith("(") && !newInfix.EndsWith(")"))
-        {
-            newInfix = $"({newInfix})";
-        }
-        return newInfix;
+        return $"({newInfix})";
     }
 
     public static string InfixToPostfix(string infix)
