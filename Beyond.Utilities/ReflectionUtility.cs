@@ -9,8 +9,62 @@ namespace Beyond.Utilities;
 
 public static class ReflectionUtility
 {
+    public static MemberExpression? GetMemberExpression(this LambdaExpression expression, bool enforceMemberExpression)
+    {
+        MemberExpression? memberExpression = null;
+        if (expression.Body.NodeType == ExpressionType.Convert)
+        {
+            var body = (UnaryExpression)expression.Body;
+            memberExpression = body.Operand as MemberExpression;
+        }
+        else if (expression.Body.NodeType == ExpressionType.MemberAccess)
+        {
+            memberExpression = expression.Body as MemberExpression;
+        }
+        if (enforceMemberExpression && memberExpression == null)
+        {
+            throw new ArgumentException("Not a member access", nameof(expression));
+        }
+        return memberExpression;
+    }
+
+    public static MethodInfo? GetMethod<T>(Expression<Func<T, object>> expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
+    public static MethodInfo? GetMethod(Expression<Func<object>> expression)
+    {
+        return GetMethod<Func<object>>(expression);
+    }
+
+    public static MethodInfo? GetMethod(Expression expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
+    public static MethodInfo? GetMethod<TDelegate>(Expression<TDelegate> expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
+    public static MethodInfo? GetMethod<T, TU>(Expression<Func<T, TU>> expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
+    public static MethodInfo? GetMethod<T, TU, TV>(Expression<Func<T, TU, TV>> expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
+    public static MethodInfo? GetMethod<T>(Expression<Action<T>> expression)
+    {
+        return new FindMethodVisitor(expression).Method;
+    }
+
     public static TProperty? GetProperty<TClass, TProperty>(TClass instanceType, string propertyName)
-        where TClass : class
+                                        where TClass : class
     {
         if (propertyName == null || string.IsNullOrEmpty(propertyName))
             throw new ArgumentNullException(nameof(propertyName), "Value can not be null or empty.");
@@ -35,29 +89,34 @@ public static class ReflectionUtility
         return obj;
     }
 
-    public static void SetProperty<TClass>(TClass instanceType, string propertyName, object propertyValue)
-        where TClass : class
+    public static PropertyInfo GetProperty<TModel>(Expression<Func<TModel, object>> expression)
     {
-        if (propertyName == null || string.IsNullOrEmpty(propertyName))
-            throw new ArgumentNullException(nameof(propertyName), "Value can not be null or empty.");
-
-        var type = instanceType.GetType();
-        var info = type.GetTypeInfo().GetProperty(propertyName);
-
-        if (info != null)
-            info.SetValue(instanceType, Convert.ChangeType(propertyValue, info.PropertyType), null);
+        var memberExpression = GetMemberExpression(expression);
+        return (PropertyInfo)memberExpression.Member;
     }
 
-    public static void SetProperty(Type instanceType, string propertyName, object propertyValue)
+    public static PropertyInfo GetProperty<TModel, T>(Expression<Func<TModel, T>> expression)
     {
-        if (propertyName == null || string.IsNullOrWhiteSpace(propertyName))
-            throw new ArgumentNullException(nameof(propertyName), "Value can not be null or empty.");
-
-        var info = instanceType.GetTypeInfo().GetProperty(propertyName);
-
-        if (info != null)
-            info.SetValue(instanceType, Convert.ChangeType(propertyValue, info.PropertyType), null);
+        var memberExpression = GetMemberExpression(expression);
+        return (PropertyInfo)memberExpression.Member;
     }
+
+    public static PropertyInfo? GetProperty(LambdaExpression expression)
+    {
+        var memberExpression = GetMemberExpression(expression, true);
+        return (PropertyInfo?)memberExpression?.Member;
+    }
+
+    public static bool IsMemberExpression<T>(Expression<Func<T, object>> expression)
+    {
+        return IsMemberExpression<T, object>(expression);
+    }
+
+    public static bool IsMemberExpression<T, TU>(Expression<Func<T, TU>> expression)
+    {
+        return GetMemberExpression(expression, false) != null;
+    }
+
     public static bool MeetsSpecialGenericConstraints(Type genericArgType, Type proposedSpecificType)
     {
         var genericArgTypeInfo = genericArgType.GetTypeInfo();
@@ -85,21 +144,31 @@ public static class ReflectionUtility
         }
         return true;
     }
-    public static PropertyInfo GetProperty<TModel>(Expression<Func<TModel, object>> expression)
+
+    public static void SetProperty<TClass>(TClass instanceType, string propertyName, object propertyValue)
+                                where TClass : class
     {
-        var memberExpression = GetMemberExpression(expression);
-        return (PropertyInfo)memberExpression.Member;
+        if (propertyName == null || string.IsNullOrEmpty(propertyName))
+            throw new ArgumentNullException(nameof(propertyName), "Value can not be null or empty.");
+
+        var type = instanceType.GetType();
+        var info = type.GetTypeInfo().GetProperty(propertyName);
+
+        if (info != null)
+            info.SetValue(instanceType, Convert.ChangeType(propertyValue, info.PropertyType), null);
     }
-    public static PropertyInfo GetProperty<TModel, T>(Expression<Func<TModel, T>> expression)
+
+    public static void SetProperty(Type instanceType, string propertyName, object propertyValue)
     {
-        var memberExpression = GetMemberExpression(expression);
-        return (PropertyInfo)memberExpression.Member;
+        if (propertyName == null || string.IsNullOrWhiteSpace(propertyName))
+            throw new ArgumentNullException(nameof(propertyName), "Value can not be null or empty.");
+
+        var info = instanceType.GetTypeInfo().GetProperty(propertyName);
+
+        if (info != null)
+            info.SetValue(instanceType, Convert.ChangeType(propertyValue, info.PropertyType), null);
     }
-    public static PropertyInfo? GetProperty(LambdaExpression expression)
-    {
-        var memberExpression = GetMemberExpression(expression, true);
-        return (PropertyInfo?)memberExpression?.Member;
-    }
+
     private static MemberExpression GetMemberExpression<TModel, T>(Expression<Func<TModel, T>> expression)
     {
         MemberExpression? memberExpression = null;
@@ -118,32 +187,7 @@ public static class ReflectionUtility
         }
         return memberExpression;
     }
-    public static MemberExpression? GetMemberExpression(this LambdaExpression expression, bool enforceMemberExpression)
-    {
-        MemberExpression? memberExpression = null;
-        if (expression.Body.NodeType == ExpressionType.Convert)
-        {
-            var body = (UnaryExpression)expression.Body;
-            memberExpression = body.Operand as MemberExpression;
-        }
-        else if (expression.Body.NodeType == ExpressionType.MemberAccess)
-        {
-            memberExpression = expression.Body as MemberExpression;
-        }
-        if (enforceMemberExpression && memberExpression == null)
-        {
-            throw new ArgumentException("Not a member access", nameof(expression));
-        }
-        return memberExpression;
-    }
-    public static bool IsMemberExpression<T>(Expression<Func<T, object>> expression)
-    {
-        return IsMemberExpression<T, object>(expression);
-    }
-    public static bool IsMemberExpression<T, TU>(Expression<Func<T, TU>> expression)
-    {
-        return GetMemberExpression(expression, false) != null;
-    }
+
     private static bool TryEvaluateExpression(Expression? operation, out object? value)
     {
         if (operation == null)
@@ -156,6 +200,7 @@ public static class ReflectionUtility
             case ExpressionType.Constant:
                 value = ((ConstantExpression)operation).Value;
                 return true;
+
             case ExpressionType.MemberAccess:
                 var me = (MemberExpression)operation;
                 if (TryEvaluateExpression(me.Expression, out var target))
@@ -177,33 +222,5 @@ public static class ReflectionUtility
         }
         value = null;
         return false;
-    }
-    public static MethodInfo? GetMethod<T>(Expression<Func<T, object>> expression)
-    {
-        return new FindMethodVisitor(expression).Method;
-    }
-    public static MethodInfo? GetMethod(Expression<Func<object>> expression)
-    {
-        return GetMethod<Func<object>>(expression);
-    }
-    public static MethodInfo? GetMethod(Expression expression)
-    {
-        return new FindMethodVisitor(expression).Method;
-    }
-    public static MethodInfo? GetMethod<TDelegate>(Expression<TDelegate> expression)
-    {
-        return new FindMethodVisitor(expression).Method;
-    }
-    public static MethodInfo? GetMethod<T, TU>(Expression<Func<T, TU>> expression)
-    {
-        return new FindMethodVisitor(expression).Method;
-    }
-    public static MethodInfo? GetMethod<T, TU, TV>(Expression<Func<T, TU, TV>> expression)
-    {
-        return new FindMethodVisitor(expression).Method;
-    }
-    public static MethodInfo? GetMethod<T>(Expression<Action<T>> expression)
-    {
-        return new FindMethodVisitor(expression).Method;
     }
 }

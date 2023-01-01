@@ -3,18 +3,18 @@ namespace Beyond.Utilities;
 
 public static class CharUtility
 {
-    public static IEnumerable<char> GetAllLetters()
-    {
-        var chars = GetAllPrintableChars()
-            .Where(char.IsLetter)
-            .ToArray();
-        return chars;
-    }
-
     public static IEnumerable<char> GetAllDigits()
     {
         var chars = GetAllPrintableChars()
             .Where(char.IsDigit)
+            .ToArray();
+        return chars;
+    }
+
+    public static IEnumerable<char> GetAllLetters()
+    {
+        var chars = GetAllPrintableChars()
+            .Where(char.IsLetter)
             .ToArray();
         return chars;
     }

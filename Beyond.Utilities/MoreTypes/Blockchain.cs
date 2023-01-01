@@ -5,7 +5,31 @@ namespace Beyond.Utilities.MoreTypes;
 
 public class Blockchain<T>
 {
-    private readonly object _lockObject = new ();
+    private readonly object _lockObject = new();
+
+    public Blockchain()
+    {
+        Chain = new List<Block>
+        {
+            new(default)
+        };
+    }
+
+    public IList<Block> Chain { get; }
+
+    public void AddBlock(T data)
+    {
+        lock (_lockObject)
+        {
+            var block = new Block(data);
+            var latestBlock = Chain[^1];
+            block.Index = latestBlock.Index + 1;
+            block.PreviousHash = latestBlock.Hash;
+            block.Hash = block.CalculateHash();
+            Chain.Add(block);
+        }
+    }
+
     public class Block
     {
         internal Block(T? data)
@@ -33,28 +57,6 @@ public class Blockchain<T>
             var inputBytes = Encoding.UTF8.GetBytes($"{TimeStampUtc}-{PreviousHash ?? ""}-{data}");
             var outputBytes = sha256.ComputeHash(inputBytes);
             return Convert.ToBase64String(outputBytes);
-        }
-    }
-    public Blockchain()
-    {
-        Chain = new List<Block>
-        {
-            new(default)
-        };
-    }
-
-    public IList<Block> Chain { get; }
-
-    public void AddBlock(T data)
-    {
-        lock (_lockObject)
-        {
-            var block = new Block(data);
-            var latestBlock = Chain[^1];
-            block.Index = latestBlock.Index + 1;
-            block.PreviousHash = latestBlock.Hash;
-            block.Hash = block.CalculateHash();
-            Chain.Add(block);
         }
     }
 }

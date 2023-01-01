@@ -11,6 +11,7 @@ public class EnumDetail<T> where T : Enum
     public string? Name { get; set; }
     public int Value { get; set; }
 }
+
 public static class EnumUtility
 {
     public static bool ContainsName<TEnum>(string? name, bool ignoreCase = false) where TEnum : Enum
@@ -46,7 +47,7 @@ public static class EnumUtility
         foreach (var name in names)
         {
             var parsed = Enum.Parse(typeof(T), name);
-            var item = (T) parsed;
+            var item = (T)parsed;
             var value = Convert.ToInt32(parsed);
             var description = item.GetDescription();
             result.Add(new EnumDetail<T>
@@ -76,7 +77,7 @@ public static class EnumUtility
     // ReSharper disable once MemberCanBePrivate.Global
     public static IEnumerable<TEnum> GetValues<TEnum>() where TEnum : Enum
     {
-        return (TEnum[]) Enum.GetValues(typeof(TEnum));
+        return (TEnum[])Enum.GetValues(typeof(TEnum));
     }
 
     // ReSharper disable once MemberCanBePrivate.Global

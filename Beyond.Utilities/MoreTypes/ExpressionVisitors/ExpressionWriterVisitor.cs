@@ -1,26 +1,23 @@
 ﻿// ReSharper disable UnusedMember.Global
 namespace Beyond.Utilities.MoreTypes.ExpressionVisitors;
+
 public sealed class ExpressionWriterVisitor : ExpressionVisitor
 {
     private readonly TextWriter _writer;
+
     public ExpressionWriterVisitor(TextWriter writer)
     {
         _writer = writer;
     }
-    protected override Expression VisitParameter(ParameterExpression node)
+
+    protected override Expression VisitBinary(BinaryExpression node)
     {
-        _writer.Write(node.Name);
+        Visit(node.Left);
+        _writer.Write(GetOperator(node.NodeType));
+        Visit(node.Right);
         return node;
     }
-    protected override Expression VisitLambda<T>(Expression<T> node)
-    {
-        _writer.Write('(');
-        _writer.Write(string.Join(',', node.Parameters.Select(param => param.Name)));
-        _writer.Write(')');
-        _writer.Write("=>");
-        Visit(node.Body);
-        return node;
-    }
+
     protected override Expression VisitConditional(ConditionalExpression node)
     {
         Visit(node.Test);
@@ -30,13 +27,23 @@ public sealed class ExpressionWriterVisitor : ExpressionVisitor
         Visit(node.IfFalse);
         return node;
     }
-    protected override Expression VisitBinary(BinaryExpression node)
+
+    protected override Expression VisitConstant(ConstantExpression node)
     {
-        Visit(node.Left);
-        _writer.Write(GetOperator(node.NodeType));
-        Visit(node.Right);
+        WriteConstantValue(node.Value);
         return node;
     }
+
+    protected override Expression VisitLambda<T>(Expression<T> node)
+    {
+        _writer.Write('(');
+        _writer.Write(string.Join(',', node.Parameters.Select(param => param.Name)));
+        _writer.Write(')');
+        _writer.Write("=>");
+        Visit(node.Body);
+        return node;
+    }
+
     protected override Expression VisitMember(MemberExpression node)
     {
         // Closures are represented as a constant object with fields representing each closed over value.
@@ -53,11 +60,67 @@ public sealed class ExpressionWriterVisitor : ExpressionVisitor
         }
         return node;
     }
-    protected override Expression VisitConstant(ConstantExpression node)
+
+    protected override Expression VisitParameter(ParameterExpression node)
     {
-        WriteConstantValue(node.Value);
+        _writer.Write(node.Name);
         return node;
     }
+
+    private static string GetOperator(ExpressionType type)
+    {
+        switch (type)
+        {
+            case ExpressionType.Equal:
+                return "==";
+
+            case ExpressionType.Not:
+                return "!";
+
+            case ExpressionType.NotEqual:
+                return "!==";
+
+            case ExpressionType.GreaterThan:
+                return ">";
+
+            case ExpressionType.GreaterThanOrEqual:
+                return ">=";
+
+            case ExpressionType.LessThan:
+                return "<";
+
+            case ExpressionType.LessThanOrEqual:
+                return "<=";
+
+            case ExpressionType.Or:
+                return "|";
+
+            case ExpressionType.OrElse:
+                return "||";
+
+            case ExpressionType.And:
+                return "&";
+
+            case ExpressionType.AndAlso:
+                return "&&";
+
+            case ExpressionType.Add:
+                return "+";
+
+            case ExpressionType.AddAssign:
+                return "+=";
+
+            case ExpressionType.Subtract:
+                return "-";
+
+            case ExpressionType.SubtractAssign:
+                return "-=";
+
+            default:
+                return "???";
+        }
+    }
+
     private void WriteConstantValue(object? obj)
     {
         switch (obj)
@@ -67,47 +130,10 @@ public sealed class ExpressionWriterVisitor : ExpressionVisitor
                 _writer.Write(str);
                 _writer.Write('"');
                 break;
+
             default:
                 _writer.Write(obj);
                 break;
-        }
-    }
-    private static string GetOperator(ExpressionType type)
-    {
-        switch (type)
-        {
-            case ExpressionType.Equal:
-                return "==";
-            case ExpressionType.Not:
-                return "!";
-            case ExpressionType.NotEqual:
-                return "!==";
-            case ExpressionType.GreaterThan:
-                return ">";
-            case ExpressionType.GreaterThanOrEqual:
-                return ">=";
-            case ExpressionType.LessThan:
-                return "<";
-            case ExpressionType.LessThanOrEqual:
-                return "<=";
-            case ExpressionType.Or:
-                return "|";
-            case ExpressionType.OrElse:
-                return "||";
-            case ExpressionType.And:
-                return "&";
-            case ExpressionType.AndAlso:
-                return "&&";
-            case ExpressionType.Add:
-                return "+";
-            case ExpressionType.AddAssign:
-                return "+=";
-            case ExpressionType.Subtract:
-                return "-";
-            case ExpressionType.SubtractAssign:
-                return "-=";
-            default:
-                return "???";
         }
     }
 }

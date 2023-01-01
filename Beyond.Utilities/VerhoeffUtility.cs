@@ -7,7 +7,7 @@ namespace Beyond.Utilities;
 
 public static class VerhoeffUtility
 {
-    private static readonly int[] Inverse = {0, 4, 3, 2, 1, 5, 6, 7, 8, 9};
+    private static readonly int[] Inverse = { 0, 4, 3, 2, 1, 5, 6, 7, 8, 9 };
 
     private static readonly int[,] Multiplication =
     {

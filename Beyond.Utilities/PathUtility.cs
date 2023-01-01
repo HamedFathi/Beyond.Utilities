@@ -23,6 +23,7 @@ public static class PathUtility
         }
         return false;
     }
+
     public static string? GetDirectoryName(string path)
     {
         if (IsDirectory(path).HasValue)
@@ -45,6 +46,7 @@ public static class PathUtility
     {
         return Path.GetDirectoryName(path.Trim(Path.DirectorySeparatorChar));
     }
+
     // Null means there is no file or directory with this path
     public static bool? IsDirectory(string path)
     {
