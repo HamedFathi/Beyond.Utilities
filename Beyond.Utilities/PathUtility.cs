@@ -64,4 +64,27 @@ public static class PathUtility
         // ReSharper disable once MergeConditionalExpression
         return isDir == null ? null : !isDir;
     }
+
+    public static bool IsValidPath(this string path, bool allowRelativePaths = false)
+    {
+        bool isValid;
+        try
+        {
+            var _ = Path.GetFullPath(path);
+            if (allowRelativePaths)
+            {
+                isValid = Path.IsPathRooted(path);
+            }
+            else
+            {
+                var root = Path.GetPathRoot(path);
+                isValid = string.IsNullOrEmpty(root?.Trim('\\', '/')) == false;
+            }
+        }
+        catch
+        {
+            isValid = false;
+        }
+        return isValid;
+    }
 }
