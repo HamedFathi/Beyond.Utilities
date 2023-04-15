@@ -46,8 +46,8 @@ public sealed class ExpressionWriterVisitor : ExpressionVisitor
 
     protected override Expression VisitMember(MemberExpression node)
     {
-        // Closures are represented as a constant object with fields representing each closed over value.
-        // This gets and prints the value of that closure.
+        // Closures are represented as a constant object with fields representing each closed over
+        // value. This gets and prints the value of that closure.
         if (node.Member is FieldInfo fieldInfo && node.Expression is ConstantExpression constExpr)
         {
             WriteConstantValue(fieldInfo.GetValue(constExpr.Value));
