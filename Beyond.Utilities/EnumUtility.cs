@@ -9,7 +9,7 @@ public class EnumDetail<T> where T : Enum
     public string? Description { get; set; }
     public T? Item { get; set; }
     public string? Name { get; set; }
-    public int Value { get; set; }
+    public long Value { get; set; }
 }
 
 public static class EnumUtility
@@ -48,7 +48,7 @@ public static class EnumUtility
         {
             var parsed = Enum.Parse(typeof(T), name);
             var item = (T)parsed;
-            var value = Convert.ToInt32(parsed);
+            var value = Convert.ToInt64(parsed);
             var description = item.GetDescription();
             result.Add(new EnumDetail<T>
             {
