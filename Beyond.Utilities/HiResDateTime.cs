@@ -18,7 +18,7 @@ public class HiResDateTime
             do
             {
                 original = lastTimeStamp;
-                long now = DateTime.UtcNow.Ticks;
+                var now = DateTime.UtcNow.Ticks;
                 newValue = Math.Max(now, original + 1);
             } while (Interlocked.CompareExchange
                          (ref lastTimeStamp, newValue, original) != original);
@@ -35,7 +35,7 @@ public class HiResDateTime
             do
             {
                 original = lastUtcTimeStamp;
-                long now = DateTime.UtcNow.Ticks;
+                var now = DateTime.UtcNow.Ticks;
                 newValue = Math.Max(now, original + 1);
             } while (Interlocked.CompareExchange
                          (ref lastUtcTimeStamp, newValue, original) != original);
