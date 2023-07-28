@@ -7,6 +7,25 @@ namespace Beyond.Utilities;
 
 public static class RandomUtility
 {
+    public static string GenerateYouTubeLikeId()
+    {
+        var base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+        var random = new byte[8]; // YouTube uses 64 bits random values
+
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(random);
+        }
+
+        var stringBuilder = new StringBuilder(11);
+        for (var i = 0; i < 11; i++)
+        {
+            var index = i < 10 ? random[i % 8] : (byte)(random[0] ^ random[1] ^ random[2] ^ random[3] ^ random[4] ^ random[5] ^ random[6] ^ random[7]);
+            index &= 0x3F; // Make sure index is within base64Chars' length
+            stringBuilder.Append(base64Chars[index]);
+        }
+        return stringBuilder.ToString();
+    }
     public static DateTime GetRandomDateTime(DateTime? startDateTime = null, DateTime? endDateTime = null)
     {
         var rnd = GetUniqueRandom();
